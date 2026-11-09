@@ -1,0 +1,17 @@
+name: Proposta de experimento
+description: Sugira uma validação reprodutível
+title: "[Experimento] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hipótese e referência
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: Método, baseline, métricas e critério de sucesso
+    validations:
+      required: true
