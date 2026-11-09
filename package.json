@@ -1,0 +1,27 @@
+{
+  "name": "ayanode-tgu",
+  "version": "1.1.0",
+  "private": true,
+  "description": "AYANODE TGU v1.1 — laboratório experimental de coerência informacional",
+  "scripts": {
+    "start": "node server/relay.js",
+    "test": "node tests/core.test.js",
+    "check": "node --check src/core.js && node --check src/app.js && node --check server/relay.js && node --check tests/core.test.js"
+  },
+  "dependencies": {
+    "gun": "0.2020.1241"
+  },
+  "main": "src/core.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ayanode",
+    "tgu",
+    "icoer",
+    "informational-coherence",
+    "distributed-systems",
+    "research"
+  ],
+  "license": "UNLICENSED"
+}

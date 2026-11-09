@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AYANODE TGU v1.1 — Laboratório de Coerência</title>
+<style>
+:root{color-scheme:dark;--bg:#070d16;--panel:#111b2bdd;--line:#26394a;--accent:#4ce5ba;--remote:#e58ed9;--text:#ecf6f7;--muted:#9cb0ba;--blue:#6dafe3}
+*{box-sizing:border-box} body{margin:0; background:var(--bg);font:14px/1.4 system-ui,Segoe UI,Arial,sans-serif;color:var(--text);min-height:100vh;overflow-x:hidden}
+#world{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0}
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:minmax(330px,420px) minmax(0,1fr);min-height:100vh;max-width:1600px;margin:0 auto;gap:20px;padding:18px}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;backdrop-filter:blur(16px);align-self:start;max-height:calc(100vh - 36px);overflow-y:auto;box-shadow:0 10px 50px #0005}
+main{display:flex;flex-direction:column;align-items:end;justify-content:space-between;gap:16px;pointer-events:none;padding:12px 6px}
+main>*{pointer-events:auto}
+.brand{display:flex;justify-content:space-between;gap:16px;align-items:start;margin-bottom:8px}
+h1{margin:0;font-size:23px;letter-spacing:.02em}h1 span{color:var(--accent)}h2{margin:20px 0 10px;font-size:12px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
+small,.muted{color:var(--muted)}.sub{color:var(--muted);margin:2px 0 16px;font-size:12px}.pill{font-size:11px;color:#a4f6da;border:1px solid #2a725f;border-radius:999px;padding:5px 8px;white-space:nowrap}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric{padding:10px 12px;border-radius:11px;background:#152439;border:1px solid #25394c}
+.metric strong{font:600 21px/1.35 ui-monospace,Consolas,monospace;display:block;letter-spacing:-.02em}.metric label{font-size:11px;color:var(--muted);display:block}
+.metric.primary strong{color:var(--accent)}.buttons{display:flex;flex-wrap:wrap;gap:8px}
+button{border:1px solid #2a655c;background:#173c37;color:#dff9f1;border-radius:9px;padding:9px 12px;cursor:pointer;font:600 12px system-ui;transition:background .15s}
+button:hover{background:#24584e}button.secondary{background:#1a293d;border-color:#36506c}button.secondary:hover{background:#283c53}
+button.warn{border-color:#854f6f;background:#3e2639}button:disabled{opacity:.55;cursor:not-allowed}
+.row{display:flex;gap:9px;align-items:center;justify-content:space-between;margin:9px 0}.row label{color:#d0e4e8;font-size:12px}
+input[type="range"]{accent-color:var(--accent);width:135px}input[type="text"],input[type="url"],select{background:#0a1522;border:1px solid #2c4456;border-radius:8px;color:var(--text);padding:9px;width:100%;min-width:0;font-size:12px}
+input[type="checkbox"]{accent-color:var(--accent)}.input-label{color:var(--muted);font-size:11px;margin:9px 0 4px;display:block}
+.sep{border-top:1px solid #233545;margin:16px 0 0}#chart{width:100%;height:165px;border-radius:9px;background:#0b1523;border:1px solid #27394c}
+.status{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:11px;min-height:24px}.dot{width:8px;height:8px;border-radius:50%;background:#818b93;flex:none}.dot.active{background:var(--accent);box-shadow:0 0 12px #4ce5ba66}.dot.wait{background:#e4b66a}
+#logs{height:118px;overflow:auto;background:#090f1b;border:1px solid #223548;border-radius:8px;padding:8px 10px;color:#acc3ce;font:11px/1.65 ui-monospace,Consolas,monospace}
+.card-note{max-width:400px;background:#111a2ac9;border:1px solid #26394a;border-radius:12px;padding:13px 16px;box-shadow:0 9px 30px #0005;color:#bcd0da;font-size:12px}
+.card-note b{color:var(--text)}.key{display:inline-flex;align-items:center;gap:6px;margin-right:12px;white-space:nowrap}.symbol{width:9px;height:9px;border-radius:50%;background:var(--accent);display:inline-block}.symbol.remote{background:var(--remote)}.symbol.sim{background:#e7b16b}
+.footer{font-size:10px;color:#7e97a7;margin-top:15px}.action-link{text-decoration:none;color:var(--accent)}
+@media(max-width:860px){.shell{grid-template-columns:1fr;padding:8px;gap:10px}aside{max-height:none;padding:16px}main{min-height:270px;align-items:center;justify-content:end}#world{height:100vh}.card-note{width:100%;max-width:none}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.metric strong{font-size:17px}}
+@media(max-width:480px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.brand{display:block}.pill{display:inline-block;margin-top:8px}}
+</style>
+</head>
+<body>
+<canvas id="world" aria-label="Visualização de nós usando suas posições tridimensionais projetadas"></canvas>
+<div class="shell">
+<aside>
+  <div class="brand"><div><h1>AYA<span>NODE</span> TGU</h1><div class="sub">Laboratório analítico · v1.1 · ⵔ◯ᘛ9ᘚ◯ⵔ</div></div><span class="pill">NÚCLEO VALIDÁVEL</span></div>
+  <div class="metrics">
+    <div class="metric"><label>ICOER global</label><strong id="m-icoer">—</strong></div>
+    <div class="metric primary"><label>Ação U</label><strong id="m-U">—</strong></div>
+    <div class="metric"><label>Ordem coletiva ||Σs||/N</label><strong id="m-order">—</strong></div>
+    <div class="metric"><label>Tensão T</label><strong id="m-T">—</strong></div>
+    <div class="metric"><label>Potencial V</label><strong id="m-V">—</strong></div>
+    <div class="metric"><label>Nós local / remoto</label><strong id="m-nodes">—</strong></div>
+  </div>
+  <h2>Dinâmica</h2>
+  <div class="buttons">
+    <button id="step">Executar 1 passo</button>
+    <button id="run">▶ Evolução contínua</button>
+    <button class="secondary" id="fifty">+ 50 passos</button>
+    <button class="secondary" id="add">+ Nó local</button>
+    <button class="warn" id="reset">Reiniciar</button>
+  </div>
+  <div class="row"><label for="mode">Gradiente do ICOER</label><select id="mode" style="width:155px"><option value="complete">Completo (v1.1)</option><option value="fixed">Campo fixo (v1.0)</option></select></div>
+  <div class="row"><label for="lr">Taxa de aprendizado</label><div><input id="lr" type="range" min="0.01" max="1.5" step="0.01" value="0.45"><small id="lr-value">0,45</small></div></div>
+  <div class="row"><label for="noise">Amplitude do ruído</label><div><input id="noise" type="range" min="0" max="0.025" step="0.001" value="0"><small id="noise-value">0</small></div></div>
+  <div class="row"><label for="spatial"><input id="spatial" type="checkbox"> Otimização espacial experimental</label><small>desligada por padrão</small></div>
+  <div class="row"><label for="seed">Semente reproduzível</label><input type="text" id="seed" value="20261109" inputmode="numeric" style="width:145px"></div>
+  <div class="buttons"><button id="compare" class="secondary">Comparar 2 gradientes</button><button id="export" class="secondary">Exportar CSV</button><button id="sim" class="secondary">Simular 2 peers</button><button id="clear-sim" class="secondary">Limpar simulação</button></div>
+  <h2>Evolução registrada</h2>
+  <canvas id="chart" height="165" aria-label="Histórico de ICOER e U"></canvas>
+  <div class="sep"></div>
+  <h2>Rede experimental P2P (GUN)</h2>
+  <label class="input-label" for="room">Sala compartilhada (sem espaços)</label><input type="text" id="room" value="aya-lab-11" maxlength="48">
+  <label class="input-label" for="relay">Endereço do relay GUN sob seu controle</label><input type="url" id="relay" placeholder="http://localhost:8765/gun" value="http://localhost:8765/gun">
+  <div class="row"><div class="buttons"><button id="network">Conectar rede</button><button id="send" class="secondary" disabled>Publicar agora</button></div><small id="peer-count">0 peers reais</small></div>
+  <div class="status"><span id="net-dot" class="dot"></span><span id="net-status">Desconectado (laboratório local funciona offline)</span></div>
+  <p class="sub">A rede só é considerada com troca confirmada quando recebe estados de outra instância. Dados desta sala são públicos para quem acessar o relay; não envie informações sensíveis. Sem autenticação nesta versão.</p>
+  <h2>Registro</h2><div id="logs" role="log" aria-live="polite"></div>
+  <div class="footer">Modelo informacional experimental. O alinhamento de vetores não comprova inteligência, consciência ou efeitos gravitacionais. Visualização usa coordenadas dos nós, sem movimento decorativo.</div>
+</aside>
+<main>
+  <div class="card-note"><b>Projeção espacial de nós e conexões KNN</b><p style="margin:5px 0 10px">As linhas mostram vizinhança derivada de <code>pos</code>. Nós remotos reais e simulados não são atualizados pelo otimizador local.</p><span class="key"><i class="symbol"></i>Local</span><span class="key"><i class="symbol remote"></i>Remoto</span><span class="key"><i class="symbol sim"></i>Simulado</span></div>
+  <div class="card-note"><b>Equações preservadas</b><div style="margin-top:5px">D = 12 · Dimensão = 16 · KNN = 4<br>U = 0,5 ICOER + 0,1 Vₙ − 0,1 Tₙ</div><small>Gradiente completo no espaço tangente e controle de avanço sem ruído por busca linear.</small></div>
+</main>
+</div>
+<script src="./src/core.js"></script>
+<script src="./src/app.js"></script>
+
+</body>
+</html>
